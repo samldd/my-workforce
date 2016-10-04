@@ -31,4 +31,13 @@
 ;; the mu.semte.ch organisation indicates that it will not be used
 ;; by them and that it shouldn't be used for permanent URIs.
 
-(add-prefix "ext" "http://mu.semte.ch/vocabularies/ext/")
+;;(add-prefix "ext" "http://mu.semte.ch/vocabularies/ext/")
+(add-prefix "default" "http://example.org/MyCompany/")
+;;(add-prefix "trans" "http://translation.escoportal.eu/vocab/")
+(add-prefix "dcterms" "http://purl.org/dc/terms/")
+(add-prefix "foaf" "http://xmlns.com/foaf/spec/")
+(add-prefix "skos" "http://www.w3.org/2004/02/skos/core#")
+(add-prefix "skosxl" "http://www.w3.org/2008/05/skos-xl#")
+(add-prefix "esco" "http://data.europa.eu/esco/model#")
+;;(add-prefix "account" "http://mu.semte.ch/vocabularies/account/")
+;;(add-prefix "hier" "http://mu.semte.ch/vocabularies/hierarchy/")

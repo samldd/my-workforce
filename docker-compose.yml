@@ -10,6 +10,8 @@ services:
     image: semtech/mu-dispatcher:1.0.1
     links:
       - resource:resource
+      - workforce:workforce
+      - generator:generator
     volumes:
       - ./config/dispatcher:/config
   db:
@@ -22,8 +24,26 @@ services:
     volumes:
       - ./data/db:/data
   resource:
-    image: semtech/mu-cl-resources:1.12.1
+    image: semtech/mu-cl-resources:1.12.4
     links:
       - db:database
     volumes:
       - ./config/resources:/config
+    ports:
+      - "4567:80" 
+  generator:
+    image: my-generator
+    links:
+     - db:database
+    environment:
+      MODE: "development"
+    volumes: 
+     - /home/sam/PycharmProjects/my-generator/:/app
+  workforce:
+    image: my-workforce
+    links:
+      - db:database
+    environment:
+      MODE: "development"
+    volumes: 
+     - /home/sam/PycharmProjects/my-workforce/:/app

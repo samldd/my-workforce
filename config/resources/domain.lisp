@@ -1,67 +1,91 @@
 (in-package :mu-cl-resources)
 
-;;;;
-;; NOTE
-;; docker-compose stop; docker-compose rm; docker-compose up
-;; after altering this file.
+(setf *supply-cache-headers-p* t)
 
-;; Describe your resources here
+(define-resource company ()
+    :class (s-prefix "default:Company")
+    :properties `((:name :string ,(s-prefix "rdf:label")))
+    :resource-base (s-url "http://example.org/MyCompany/Company/")
+    :on-path "companies")
 
-;; The general structure could be described like this:
-;;
-;; (define-resource <name-used-in-this-file> ()
-;;   :class <class-of-resource-in-triplestore>
-;;   :properties `((<json-property-name-one> <type-one> ,<triplestore-relation-one>)
-;;                 (<json-property-name-two> <type-two> ,<triplestore-relation-two>>))
-;;   :has-many `((<name-of-an-object> :via ,<triplestore-relation-to-objects>
-;;                                    :as "<json-relation-property>")
-;;               (<name-of-an-object> :via ,<triplestore-relation-from-objects>
-;;                                    :inverse t ; follow relation in other direction
-;;                                    :as "<json-relation-property>"))
-;;   :has-one `((<name-of-an-object :via ,<triplestore-relation-to-object>
-;;                                  :as "<json-relation-property>")
-;;              (<name-of-an-object :via ,<triplestore-relation-from-object>
-;;                                  :as "<json-relation-property>"))
-;;   :resource-base (s-url "<string-to-which-uuid-will-be-appended-for-uri-of-new-items-in-triplestore>")
-;;   :on-path "<url-path-on-which-this-resource-is-available>")
+(define-resource employee-function ()
+    :class (s-prefix "default:EmployeeFunction")
+    :properties `((:start-date :date ,(s-prefix "default:start"))
+                  (:end-date :date ,(s-prefix "default:end")))
+    :has-many `((occupation :via ,(s-prefix "esco:hasOccupation")        :as "occupation"))
+    :resource-base (s-url "http://example.org/MyCompany/Employee_function/")
+    :on-path "employee-functions")
 
+(define-resource employee-skill ()
+    :class (s-prefix "default:EmployeeSkill")
+    :properties `((:acquired :date ,(s-prefix "default:acquired")))
+    :has-one `((skill :via ,(s-prefix "esco:hasSkill") :as "skill"))
+    :resource-base (s-url "http://example.org/MyCompany/Employee_skill/")
+    :on-path "employee-skills")
 
-;; An example setup with a catalog, dataset, themes would be:
-;;
-;; (define-resource catalog ()
-;;   :class (s-prefix "dcat:Catalog")
-;;   :properties `((:title :string ,(s-prefix "dct:title")))
-;;   :has-many `((dataset :via ,(s-prefix "dcat:dataset")
-;;                        :as "datasets"))
-;;   :resource-base (s-url "http://webcat.tmp.semte.ch/catalogs/")
-;;   :on-path "catalogs")
+(define-resource skill ()
+  :class (s-prefix "esco:Skill")
+  :properties `((:codes :string-set ,(s-prefix "dcterms:identifier"))
+                (:types :string-set ,(s-prefix "rdf:type"))
+                (:description :language-string-set ,(s-prefix "dcterms:description"))
+                (:definition :language-string-set ,(s-prefix "skos:definition"))
+                (:skill-type :string ,(s-prefix "esco:skillType"))
+                (:name :string ,(s-prefix "skos:prefLabel")))
+  :has-one `((employee-skill :via ,(s-prefix "esco:Skill") :inverse t     :as "employee-skill"))
+  :resource-base (s-url "http://translation.escoportal.eu/topics/")
+  :on-path "skills")
 
-;; (define-resource dataset ()
-;;   :class (s-prefix "dcat:Dataset")
-;;   :properties `((:title :string ,(s-prefix "dct:title"))
-;;                 (:description :string ,(s-prefix "dct:description")))
-;;   :has-one `((catalog :via ,(s-prefix "dcat:dataset")
-;;                       :inverse t
-;;                       :as "catalog"))
-;;   :has-many `((theme :via ,(s-prefix "dcat:theme")
-;;                      :as "themes"))
-;;   :resource-base (s-url "http://webcat.tmp.tenforce.com/datasets/")
-;;   :on-path "datasets")
+(define-resource occupation ()
+  :class (s-prefix "esco:Occupation")
+  :properties `((:codes :string-set ,(s-prefix "dcterms:identifier"))
+                (:types :string-set ,(s-prefix "rdf:type"))
+                (:description :language-string-set ,(s-prefix "dcterms:description"))
+                (:definition :language-string-set ,(s-prefix "skos:definition"))
+                (:name :string ,(s-prefix "skos:prefLabel")))
+  :resource-base (s-url "http://translation.escoportal.eu/topics/")
+  :on-path "occupations")
 
-;; (define-resource distribution ()
-;;   :class (s-prefix "dcat:Distribution")
-;;   :properties `((:title :string ,(s-prefix "dct:title"))
-;;                 (:access-url :url ,(s-prefix "dcat:accessURL")))
-;;   :resource-base (s-url "http://webcat.tmp.tenforce.com/distributions/")
-;;   :on-path "distributions")
+(define-resource project ()
+  :class (s-prefix "default:Project")
+  :properties `((:codes :string-set ,(s-prefix "dcterms:identifier"))
+                (:types :string-set ,(s-prefix "rdf:type"))
+                (:start :date ,(s-prefix "default:start"))
+		(:end :date ,(s-prefix "default:end"))
+		(:description :string ,(s-prefix "default:description"))
+		(:name :string ,(s-prefix "rdfs:label")))
+  :has-many `((project-skill :via ,(s-prefix "default:requiredSkill")             :as "required-skills"))
+  :resource-base (s-url "http://example.org/MyCompany/Project/")
+  :on-path "projects")
 
-;; (define-resource theme ()
-;;   :class (s-prefix "tfdcat:Theme")
-;;   :properties `((:pref-label :string ,(s-prefix "skos:prefLabel")))
-;;   :has-many `((dataset :via ,(s-prefix "dcat:theme")
-;;                        :inverse t
-;;                        :as "datasets"))
-;;   :resource-base (s-url "http://webcat.tmp.tenforce.com/themes/")
-;;   :on-path "themes")
+(define-resource project-skill ()
+  :class (s-prefix "default:ProjectSkill")
+  :properties `((:codes :string-set ,(s-prefix "dcterms:identifier"))
+                (:types :string-set ,(s-prefix "rdf:type"))
+                (:required-days :integer ,(s-prefix "default:requiredDays")))
+  :has-one `((skill 		:via ,(s-prefix "esco:requiredSkill") 		    :as "skill")
+	     (employee-project  :via ,(s-prefix "default:allocatedTo")     	    :as "employee-project")
+	     (project           :via ,(s-prefix "default:requiredSkill") :inverse t :as "project"))
+  :resource-base (s-url "http://example.org/MyCompany/ProjectSkill/")
+  :on-path "project-skills")
 
-;;
+(define-resource employee-project ()
+  :class (s-prefix "default:EmployeeProject")
+  :properties `((:codes :string-set ,(s-prefix "dcterms:identifier"))
+                (:types :string-set ,(s-prefix "rdf:type"))
+                (:start :date ,(s-prefix "default:start"))
+		(:end :date ,(s-prefix "default:end")))
+  :has-one `((employee      :via ,(s-prefix "default:hasProject")  	          :as "employee")
+	     (project-skill :via ,(s-prefix "default:allocatedTo")  :inverse t    :as "project-skill"))
+  :resource-base (s-url "http://example.org/MyCompany/EmployeeProject/")
+  :on-path "employee-projects")
+
+(define-resource employee ()
+    :class (s-url "http://example.org/MyCompany/Employee")
+    :properties `((:types :string-set ,(s-prefix "rdf:type"))
+		  (:name :string ,(s-prefix "foaf:name")))
+    :has-one `((company :via ,(s-prefix "default:worksFor")                :as "employer"))
+    :has-many `((employee-skill    :via ,(s-prefix "default:hasSkill")     :as "employee-skill")
+                (employee-function :via ,(s-prefix "default:function")     :as "function-skill")
+                (employee-project  :via ,(s-prefix "default:hasProject")   :as "employee-project"))
+    :resource-base (s-url "http://example.org/MyCompany/Employee/")
+    :on-path "employees")

@@ -58,6 +58,10 @@ defmodule Dispatcher do
     Proxy.forward conn, path, "http://workforce/skills/"
   end
 
+  match "/bubble/*path" do
+    Proxy.forward conn, path, "http://workforce/bubble/"
+  end
+
   match "/matches/*path" do
     Proxy.forward conn, path, "http://workforce/employee_sugestions/"
   end

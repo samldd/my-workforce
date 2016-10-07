@@ -1,11 +1,15 @@
 version: "2"
 services:
+  app:
+    image: samldd/my-workforce-frontend
+    links:
+      - identifier:backend
+    ports:
+      - 80:80
   identifier:
     image: semtech/mu-identifier:1.0.0
     links:
       - dispatcher:dispatcher
-    ports:
-      - "80:80"
   dispatcher:
     image: semtech/mu-dispatcher:1.0.1
     links:
@@ -29,21 +33,11 @@ services:
       - db:database
     volumes:
       - ./config/resources:/config
-    ports:
-      - "4567:80" 
   generator:
-    image: my-generator
+    image: samldd/my-workforce-generator
     links:
      - db:database
-    environment:
-      MODE: "development"
-    volumes: 
-     - /home/sam/PycharmProjects/my-generator/:/app
   workforce:
-    image: my-workforce
+    image: samldd/my-workforce-backend
     links:
       - db:database
-    environment:
-      MODE: "development"
-    volumes: 
-     - /home/sam/PycharmProjects/my-workforce/:/app
